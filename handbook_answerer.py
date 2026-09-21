@@ -15,6 +15,7 @@ PAGES = {
     "People Operations": "https://handbook.gitlab.com/handbook/people-group/people-operations/",
 }
 STOP = {"the", "and", "for", "you", "your", "with", "that", "this", "what", "how", "are", "can", "does", "from", "into", "about"}
+VOID_TAGS = {"area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr"}
 
 
 class MainText(HTMLParser):
@@ -32,6 +33,10 @@ class MainText(HTMLParser):
             self.depth = 1
             return
         if not self.in_main:
+            return
+        if tag in VOID_TAGS:
+            if tag == "br":
+                self.parts.append("\n")
             return
         self.depth += 1
         if tag in {"script", "style", "nav", "aside"}:
@@ -128,6 +133,7 @@ def answer(question: str, model: str = "qwen3:8b") -> dict:
         "Answer the question using only the cited GitLab handbook passages below. "
         "If they do not answer it, say you cannot determine it from these passages. "
         "Give a short answer with citations like [1]. Do not invent eligibility or policy rules. "
+        "Do not add approval or permission steps unless a passage explicitly requires them. "
         "Do not describe any action as completed. /no_think\n\n"
         f"Question: {question}\n\nPassages:\n{context}\n\nAnswer:"
     )
